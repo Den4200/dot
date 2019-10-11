@@ -1,0 +1,140 @@
+# Dot Programming Language Interpreter
+import re
+
+class Lexer:
+
+    def __init__(self, source_code):
+        self.source_code = source_code
+
+    def tokenize(self):
+        tokens = []
+        source_code = self.source_code.split()
+        source_index = 0
+
+        # Loop through each word in code to generate tokens
+        while source_index < len(source_code):
+            word = source_code[source_index]
+
+            # This recognises a variable and creates a token for it
+            if word == "var": 
+                tokens.append(["VAR_DECLARATION", word])
+
+            # This recognises a word and creates an identifier token for it
+            elif re.match('[a-z]', word) or re.match('[A-Z]', word):
+                if word[len(word) - 1] == ";":
+                    tokens.append(['IDENTIFIER', word[0:len(word) - 1]])
+                else:
+                    tokens.append(['IDENTIFIER', word])
+
+            # This recognises an integer and creates an integer token for it
+            elif re.match('[0-9]', word):
+                if word[len(word) - 1] == ";":
+                    tokens.append(['INTEGER', word[0:len(word) - 1]])
+                else:
+                    tokens.append(['INTEGER', word])
+
+            # This recognises operators and creates an operator token for it
+            elif word in "=/*=-+":
+                tokens.append(['OPERATOR', word])
+
+            # If a STATEMENT_END (;) is found at the last character in a word,
+            # Add a STATEMENT_END token
+            if word[len(word) - 1] == ";":
+                tokens.append(['STATEMENT_END', ';'])
+
+            source_index += 1
+
+        return tokens
+
+class Parser:
+
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.token_index = 0
+        self.transpiled_code = ""
+
+    def parse(self):
+        while self.token_index < len(self.tokens):
+            
+            # Holds the type of token e.g. IDENTIFIER
+            token_type = self.tokens[self.token_index][0]
+            # Holds the value of a token e.g. var
+            token_value = self.tokens[self.token_index][1]
+
+            # This will trigger when a variable declaration is found
+            if token_type == "VAR_DECLARATION" and token_value == "var":
+                self.parse_variable_declaration(self.tokens[self.token_index:len(self.tokens)])
+
+            self.token_index += 1
+
+        print(self.transpiled_code)
+
+    def parse_variable_declaration(self, token_stream):
+        tokens_checked = 0
+
+        name = ""
+        operator = ""
+        value = ""
+
+        for token in range(0, len(token_stream)):
+            # Holds the type of token e.g. IDENTIFIER
+            token_type = token_stream[tokens_checked][0]
+            # Holds the value of a token e.g. va
+            token_value = token_stream[tokens_checked][1]
+
+            # If the statement end is found, break out of the loop
+            if token == 4 and token_type == "STATEMENT_END":
+                break
+
+            # This will get the variable name
+            elif token == 1 and token_type == "IDENTIFIER":
+               name = token_value
+            # This will perform error validation for invalid names
+            elif token == 1 and token_type != "IDENTIFIER":
+                print("ERROR: Invalid variable name '" + token_value + "'")
+                quit()
+
+            # This will get the variable assignment operator e.g. =
+            elif token == 2 and token_type == "OPERATOR":
+                operator = token_value
+            # This will perform error validation for invalid operators
+            elif token == 2 and token_type != "OPERATOR":
+                print("ERROR: Assignment Operator is missing or invalid")
+                quit()
+
+            # This will get the variable value assigned
+            elif token == 3 and  token_type in ['STRING', 'INTEGER', 'IDENTIFIER']:
+                value = token_value
+            # This will perform error validation for invalid assignment values
+            elif token == 3 and token_type not in ['STRING', 'INTEGER', 'IDENTIFIER']:
+                print("Invalid variable assignment value: " + token_value)
+                quit()
+
+            tokens_checked += 1
+
+        self.transpiled_code += VariableObject().transpile(name, operator, value)
+
+        self.token_index += tokens_checked
+
+class VariableObject:
+
+    def __init__(self):
+        self.exec_string = ""
+
+    def transpile(self, name, operator, value):
+        # Converts Dot into Python
+        self.exec_string += f'{name} {operator} {value}\n'
+        return self.exec_string
+
+
+def main():
+    with open('test.do', 'r') as f:
+        content = f.read()
+    
+    tokens = Lexer(content).tokenize()
+    print(tokens)
+
+    Parser(tokens).parse()
+
+if __name__ == '__main__':
+    main()
