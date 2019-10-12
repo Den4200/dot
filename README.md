@@ -11,4 +11,6 @@ There is an example `test.do` file in `app/tests`
 ## The Road Ahead
 * Support for addition, subtraction, multiplication, and division
 * Support for `+=`, `-=`, `*=`, and `/=`
+* Support for `if/else` statements
+* Support for a user `input`
 * Other features
