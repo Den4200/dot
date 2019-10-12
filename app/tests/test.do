@@ -9,5 +9,4 @@ print date;
 var test = "Hello world! What's up? This is a test of our new string system!!!";
 print test;
 
-var x = "testing test 1 2 3";
-print x;
+print "testing test 1 2 3";

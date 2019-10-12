@@ -61,8 +61,15 @@ class Lexer:
                 while word[len(word) - 1] != ";":
                     word = source_code[source_index]
 
+                    # This recognizes a string and creates a string token for it
+                    if word[0] == '"' and word[len(word) - 1] == '"':
+                        if word[len(word) - 1] == ";":
+                            tokens.append(['STRING', word[0:len(word) - 1]])
+                        else:
+                            tokens.append(['STRING', word])
+
                     # This recognises a variable and creates an identifier token for it
-                    if re.match('[a-z]', word) or re.match('[A-Z]', word):
+                    elif re.match('[a-z]', word) or re.match('[A-Z]', word):
                         if word[len(word) - 1] == ";":
                             tokens.append(['VAR_NAME', word[0:len(word) - 1]])
                         else:
@@ -168,10 +175,10 @@ class Parser:
                 break
 
             # This will get the variable name
-            elif token == 1 and token_type == "VAR_NAME":
+            elif token == 1 and token_type in ['VAR_NAME', 'STRING']:
                 variable = token_value
             # This will perform error validation for invalid variable names
-            elif token == 1 and token_type != "VAR_NAME":
+            elif token == 1 and token_type != ['VAR_NAME', 'STRING']:
                 print("Invalid VAR_NAME: " + token_value)
                 quit()
 
