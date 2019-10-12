@@ -1,4 +1,4 @@
-# Dot Programming Language Interpreter
+# Dot Programming Language
 import re
 import shlex
 
